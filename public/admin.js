@@ -2,7 +2,6 @@ let selectedChatId = null;
 let selectedChatTitle = null;
 let replyToMessageId = null;
 let replyToName = null;
-let replyToText = null;
 
 async function api(path, options = {}) {
   options.headers = {
@@ -90,7 +89,6 @@ async function loadChats() {
     div.onclick = async () => {
       selectedChatId = chat.chat_id;
       selectedChatTitle = chat.chat_title || chat.chat_id;
-
       document.getElementById("chatTitle").innerText = selectedChatTitle;
 
       clearReply();
@@ -139,15 +137,6 @@ async function loadMessages() {
         <div class="sender">${safeUsername}</div>
 
         <div class="bubble">
-          ${
-            m.reply_to_message_id
-              ? `<div class="reply-preview">
-                  <div class="reply-name">${escapeHtml(m.reply_to_username || "Replied message")}</div>
-                  <div class="reply-text">${escapeHtml(m.reply_to_text || "")}</div>
-                </div>`
-              : ""
-          }
-
           <div class="message-text">${escapeHtml(messageText)}</div>
         </div>
 
@@ -173,7 +162,6 @@ async function loadMessages() {
 function selectReply(messageId, username, text) {
   replyToMessageId = messageId;
   replyToName = username;
-  replyToText = text;
 
   document.getElementById("replyText").innerText = "Replying to " + username;
   document.getElementById("replyBox").classList.remove("hidden");
@@ -182,7 +170,6 @@ function selectReply(messageId, username, text) {
 function clearReply() {
   replyToMessageId = null;
   replyToName = null;
-  replyToText = null;
 
   document.getElementById("replyText").innerText = "";
   document.getElementById("replyBox").classList.add("hidden");
@@ -204,9 +191,7 @@ async function sendMessage() {
     body: JSON.stringify({
       chat_id: selectedChatId,
       text,
-      reply_to_message_id: replyToMessageId,
-      reply_to_username: replyToName,
-      reply_to_text: replyToText
+      reply_to_message_id: replyToMessageId
     })
   });
 
@@ -226,7 +211,7 @@ async function deleteChat() {
   if (!confirm("Delete this chat history from panel?")) return;
 
   await api(
-    "/api/admin/chats?chat_id=" + encodeURIComponent(selectedChatId),
+    "/api/admin/chat?chat_id=" + encodeURIComponent(selectedChatId),
     { method: "DELETE" }
   );
 
