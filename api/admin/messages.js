@@ -1,13 +1,6 @@
 import { supabase } from "../lib/supabase.js";
 import { sendTelegram } from "../lib/telegram.js";
 
-export default async function handler(req, res) {
-  const password = req.headers["x-admin-password"];
-
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
   // GET messages
   if (req.method === "GET") {
     const chatId = req.query.chat_id;
@@ -34,12 +27,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ messages: data });
   }
-
-  // SEND message
-  if (req.method === "POST") {
-    if (req.body.reply_password !== process.env.REPLY_PASSWORD) {
-      return res.status(403).json({ error: "Wrong reply password" });
-    }
+  
 
     const { chat_id, text, reply_to_message_id, reply_to_username, reply_to_text } = req.body;
 
