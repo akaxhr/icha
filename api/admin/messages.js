@@ -1,6 +1,8 @@
 import { supabase } from "../lib/supabase.js";
 import { sendTelegram } from "../lib/telegram.js";
 
+export default async function handler(req, res) {
+
   // GET messages
   if (req.method === "GET") {
     const chatId = req.query.chat_id;
@@ -11,7 +13,7 @@ import { sendTelegram } from "../lib/telegram.js";
       .select("*")
       .eq("chat_id", chatId)
       .order("created_at", { ascending: true })
-      .range(0, 5005)
+      .range(0, 5005);
 
     if (search) {
       query = query.or(
@@ -27,25 +29,42 @@ import { sendTelegram } from "../lib/telegram.js";
 
     return res.status(200).json({ messages: data });
   }
-  
 
-    const { chat_id, text, reply_to_message_id, reply_to_username, reply_to_text } = req.body;
+  // POST message
+  if (req.method === "POST") {
+    const {
+      chat_id,
+      text,
+      reply_to_message_id,
+      reply_to_username,
+      reply_to_text
+    } = req.body;
 
     if (!chat_id || !text) {
-      return res.status(400).json({ error: "chat_id and text required" });
+      return res.status(400).json({
+        error: "chat_id and text required"
+      });
     }
 
     const result = await sendTelegram(
       chat_id,
       text,
-      reply_to_message_id || null
+      reply_to_message_id || null,
+      "Panel Reply",
+      null,
+      {
+        reply_to_username,
+        reply_to_text
+      }
     );
 
     return res.status(200).json({
       ok: true,
-      telegram: result,
+      telegram: result
     });
   }
 
-  return res.status(405).json({ error: "Method not allowed" });
+  return res.status(405).json({
+    error: "Method not allowed"
+  });
 }
