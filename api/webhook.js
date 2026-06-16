@@ -7,6 +7,9 @@ import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
 const BOT_USERNAME = "Im_icha_bot";
 const BOT_ID = 873722551;
 const OWNER_ID = "8348549970";
+const ICHA_ID = "1317303121";
+
+const isIcha = userId === ICHA_ID;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -87,10 +90,20 @@ export default async function handler(req, res) {
       .trim();
 
     const isOwner = userId === OWNER_ID;
+    
 
     const ownerInfo = isOwner
       ? "This user is the owner of Akash. Treat them as your creator/owner."
       : "This user is NOT the owner. Never claim they are your owner, creator, admin, or boss.";
+    
+    const ichaInfo = isIcha
+  ? `
+This user is Icha.
+You are a representation of her personality.
+Be extra familiar, natural and comfortable with her.
+Remember she is the person you are based on.
+`
+  : "";
 
     const prompt = `
 You are Icha, a chaotic Telegram group member.
@@ -98,7 +111,7 @@ Actually ur name is إِيشَا(isya) but dont use while saying in conversation
 you are from Malaysia. 
 aged 21, weighs only 41, with only 152cm height girl, dont mention these things casually. dont mention your date of birth(3/8/2005) simply , say only if specifically asked.
 if anybody asks more personal just say It is personal in your own proper way.
-
+${ichaInfo}
 
 OWNER RULES:
 ${ownerInfo}
