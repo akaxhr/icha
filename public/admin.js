@@ -262,7 +262,6 @@ function handleEnter(event) {
 
 loadChats();
 trackPanelVisit();
-setInterval(() => {
-  loadChats();
+ setInterval(() => {
   if (selectedChatId) loadMessages();
-}, 3000);
+}, 5000);
