@@ -4,11 +4,9 @@ import { sendTelegram } from "./lib/telegram.js";
 import { saveMessage } from "./lib/messages.js";
 import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
 
-const BOT_USERNAME = "Im_icha_bot";
-const BOT_ID = 873722551;
+const BOT_USERNAME = "im_icha_bot";
+const BOT_ID = 8737922551;
 const OWNER_ID = "8348549970";
-
-
 
 
 export default async function handler(req, res) {
