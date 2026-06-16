@@ -1,6 +1,13 @@
 import { saveMessage } from "./messages.js";
 
-export async function sendTelegram(chatId, text, replyTo = null, chatTitle = "Bot Reply", replyMarkup = null) {
+export async function sendTelegram(
+  chatId,
+  text,
+  replyTo = null,
+  chatTitle = "Bot Reply",
+  replyMarkup = null,
+  replyMeta = {}
+) {
   const body = {
     chat_id: chatId,
     text,
@@ -19,7 +26,9 @@ export async function sendTelegram(chatId, text, replyTo = null, chatTitle = "Bo
     `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     }
   );
@@ -38,9 +47,11 @@ export async function sendTelegram(chatId, text, replyTo = null, chatTitle = "Bo
     username: "Akash",
     message_text: text,
     telegram_message_id: result.result?.message_id || null,
+
     reply_to_message_id: replyTo || null,
     reply_to_text: replyMeta.reply_to_text || null,
     reply_to_username: replyMeta.reply_to_username || null,
+
     is_bot: true,
   });
 
