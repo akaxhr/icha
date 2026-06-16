@@ -39,6 +39,8 @@ export async function sendTelegram(chatId, text, replyTo = null, chatTitle = "Bo
     message_text: text,
     telegram_message_id: result.result?.message_id || null,
     reply_to_message_id: replyTo || null,
+    reply_to_text: replyMeta.reply_to_text || null,
+    reply_to_username: replyMeta.reply_to_username || null,
     is_bot: true,
   });
 
