@@ -1,3 +1,10 @@
+import { generateWithFallback } from "./lib/ai.js";
+import { getUserHistory, saveUserHistory } from "./lib/memory.js";
+import { sendTelegram } from "./lib/telegram.js";
+import { saveMessage } from "./lib/messages.js";
+import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
+
+
 const BOT_USERNAME = "akaxhr_bot";
 
 export default async function handler(req, res) {
