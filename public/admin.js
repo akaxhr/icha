@@ -56,7 +56,7 @@ async function saveGroupSettings() {
 }
 
 async function loadChats() {
-  const data = await api("/api/admin/chats");
+  const data = await api("/api/admin/chat");
   const box = document.getElementById("chats");
   box.innerHTML = "";
 
