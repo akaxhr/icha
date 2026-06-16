@@ -64,8 +64,8 @@ export default async function handler(req, res) {
 
     const shouldReply =
       isPrivateChat ||
-      text.startsWith("/akash") ||
-      /\bakash\b/i.test(text) ||
+      text.startsWith("/icha") ||
+      /\bicha\b/i.test(text) ||
       lowerText.includes(`@${BOT_USERNAME}`) ||
       lowerText.startsWith("remember") ||
       isReplyToBot;
