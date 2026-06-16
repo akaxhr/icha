@@ -7,9 +7,9 @@ import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
 const BOT_USERNAME = "Im_icha_bot";
 const BOT_ID = 873722551;
 const OWNER_ID = "8348549970";
-const ICHA_ID = "1317303121";
 
-const isIcha = userId === ICHA_ID;
+
+
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -28,9 +28,11 @@ export default async function handler(req, res) {
     const settings = await getGroupSettings(chatId);
 
     const userId = String(message.from.id);
+    
     const userName = message.from?.first_name || "User";
     const displayName = await getDisplayName(userId, userName);
-
+    const ICHA_ID = "1317303121";
+    const isIcha = userId === ICHA_ID;
     const text = message.text.trim();
     const lowerText = text.toLowerCase();
 
