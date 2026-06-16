@@ -4,7 +4,7 @@ import { sendTelegram } from "./lib/telegram.js";
 import { saveMessage } from "./lib/messages.js";
 import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
 
-const BOT_USERNAME = "akaxhr_bot";
+const BOT_USERNAME = "Im_icha_bot";
 const BOT_ID = 8847459711;
 const OWNER_ID = "8348549970";
 
