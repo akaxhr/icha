@@ -40,7 +40,7 @@ async function loadGroupSettings() {
   if (!selectedChatId) return;
 
   const data = await api(
-    "/api/admin/group-settings?chat_id=" + encodeURIComponent(selectedChatId)
+    "/api/webhook?admin=group-settings&chat_id=" + encodeURIComponent(selectedChatId)
   );
 
   setChecked("ai_enabled", data.ai_enabled);
@@ -65,7 +65,7 @@ async function trackPanelVisit() {
     localStorage.setItem("panel_visitor_id", visitorId);
   }
 
-  await api("/api/admin/panel-visit", {
+  await api("/api/webhook?admin=panel-visit", {
     method: "POST",
     body: JSON.stringify({
       visitor_id: visitorId,
@@ -93,7 +93,7 @@ async function saveGroupSettings() {
     return;
   }
 
-  await api("/api/admin/group-settings", {
+  await api("/api/webhook?admin=group-settings", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
@@ -118,7 +118,7 @@ async function saveGroupSettings() {
 }
 
 async function loadChats() {
-  const data = await api("/api/admin/chat");
+  const data = await api("/api/webhook?admin=chat");
   const box = document.getElementById("chats");
   box.innerHTML = "";
 
@@ -173,7 +173,7 @@ async function loadMessages() {
   const search = document.getElementById("messageSearch")?.value || "";
 
   const data = await api(
-    "/api/admin/messages?chat_id=" +
+    "/api/webhook?admin=messages&chat_id=" +
       encodeURIComponent(selectedChatId) +
       "&search=" +
       encodeURIComponent(search)
@@ -249,7 +249,7 @@ async function sendMessage() {
 
   if (!text) return;
 
-  await api("/api/admin/messages", {
+  await api("/api/webhook?admin=messages", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
@@ -274,7 +274,7 @@ async function deleteChat() {
   if (!confirm("Delete this chat history from panel?")) return;
 
   await api(
-    "/api/admin/chat?chat_id=" + encodeURIComponent(selectedChatId),
+    "/api/webhook?admin=chat&chat_id=" + encodeURIComponent(selectedChatId),
     { method: "DELETE" }
   );
 
