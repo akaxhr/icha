@@ -2,6 +2,7 @@ import { logUserTextHistory } from "../lib/modules/userHistoryLogger.js";
 import { handleAiReply } from "../lib/aiReply/index.js";
 import { handleCommands } from "../lib/router/commandRouter.js";
 import "../lib/commands/index.js";
+
 import { logIncomingMessage } from "../lib/modules/messageLogger.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
 import { handleCallback } from "../lib/settingsUi.js";
@@ -17,28 +18,28 @@ function ok(res) {
 export default async function handler(req, res) {
   let adminAction = null;
 
-try {
-  adminAction = getAdminAction(req);
-} catch (err) {
-  console.error("getAdminAction error:", err);
-  return res.status(500).json({
-    error: "getAdminAction failed",
-    message: err.message
-  });
-}
-
-if (adminAction) {
   try {
-    return await handleAdminApi(req, res, adminAction);
+    adminAction = getAdminAction(req);
   } catch (err) {
-    console.error("handleAdminApi error:", err);
+    console.error("getAdminAction error:", err);
     return res.status(500).json({
-      error: "handleAdminApi failed",
-      message: err.message,
-      stack: err.stack
+      error: "getAdminAction failed",
+      message: err.message
     });
   }
-}
+
+  if (adminAction) {
+    try {
+      return await handleAdminApi(req, res, adminAction);
+    } catch (err) {
+      console.error("handleAdminApi error:", err);
+      return res.status(500).json({
+        error: "handleAdminApi failed",
+        message: err.message,
+        stack: err.stack
+      });
+    }
+  }
 
   if (req.method !== "POST") {
     return res
@@ -75,13 +76,7 @@ if (adminAction) {
     const displayName = await getDisplayName(userId, userName);
     const settings = await getGroupSettings(chatId);
 
-    if (message.text || message.caption) {
     await logIncomingMessage(message, userId, displayName);
-    }
-
-    if (await handleJoinLeave(message)) {
-      return ok(res);
-    }
 
     const text = String(message.text || message.caption || "").trim();
     const lowerText = text.toLowerCase();
@@ -101,36 +96,13 @@ if (adminAction) {
       ownerId: OWNER_ID
     };
 
-   await logUserTextHistory(message, userId, userName, text);
-
-    if (await handleVerify(message)) {
-      return ok(res);
-    }
+    await logUserTextHistory(message, userId, userName, text);
 
     if (await handleCommands(ctx)) {
       return ok(res);
     }
 
-    if (await handleModerationCommand(message)) {
-      return ok(res);
-    }
-
-    if (await handleGroupCommand(message)) {
-      return ok(res);
-    }
-
-    const violation = await checkLocksAndSpam(message, settings);
-
-    if (violation) {
-      await applyViolation(message, violation);
-      return ok(res);
-    }
-
-    if (await maybeAiModerate(message, settings)) {
-      return ok(res);
-    }
-
-    if (await handleAutoFilter(message)) {
+    if (await runMessagePipeline(ctx)) {
       return ok(res);
     }
 
