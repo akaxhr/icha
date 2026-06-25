@@ -27,11 +27,30 @@ function ok(res) {
 }
 
 export default async function handler(req, res) {
-  const adminAction = getAdminAction(req);
+  let adminAction = null;
 
-  if (adminAction) {
-    return handleAdminApi(req, res, adminAction);
+try {
+  adminAction = getAdminAction(req);
+} catch (err) {
+  console.error("getAdminAction error:", err);
+  return res.status(500).json({
+    error: "getAdminAction failed",
+    message: err.message
+  });
+}
+
+if (adminAction) {
+  try {
+    return await handleAdminApi(req, res, adminAction);
+  } catch (err) {
+    console.error("handleAdminApi error:", err);
+    return res.status(500).json({
+      error: "handleAdminApi failed",
+      message: err.message,
+      stack: err.stack
+    });
   }
+}
 
   if (req.method !== "POST") {
     return res
