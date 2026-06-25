@@ -5,18 +5,7 @@ import "../lib/commands/index.js";
 import { logIncomingMessage } from "../lib/modules/messageLogger.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
 import { handleCallback } from "../lib/settingsUi.js";
-import {
-  handleAutoFilter,
-  handleGroupCommand,
-  handleJoinLeave,
-  handleVerify
-} from "../lib/groupFeatures.js";
-import {
-  applyViolation,
-  checkLocksAndSpam,
-  handleModerationCommand
-} from "../lib/moderation.js";
-import { maybeAiModerate } from "../lib/aiModeration.js";
+import { runMessagePipeline } from "../lib/modules/messagePipeline.js";
 import { getAdminAction, handleAdminApi } from "../lib/admin/index.js";
 
 const OWNER_ID = String(process.env.OWNER_ID || "8348549970");
