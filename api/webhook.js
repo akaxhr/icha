@@ -112,9 +112,7 @@ if (adminAction) {
       ownerId: OWNER_ID
     };
 
-    if (text) {
-      await saveUserHistory(userId, userName, "user", text);
-    }
+   await logUserTextHistory(message, userId, userName, text);
 
     if (await handleVerify(message)) {
       return ok(res);
