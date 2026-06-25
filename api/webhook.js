@@ -1,4 +1,6 @@
 import { generateWithFallback } from "../lib/ai.js";
+import { handleCommands } from "../lib/router/commandRouter.js";
+import "../lib/commands/index.js";
 import { getUserHistory, saveUserHistory } from "../lib/memory.js";
 import { sendTelegram } from "../lib/telegram.js";
 import { saveMessage } from "../lib/messages.js";
@@ -174,34 +176,31 @@ export default async function handler(req, res) {
     const text = String(message.text || message.caption || "").trim();
     const lowerText = text.toLowerCase();
 
+    const ctx = {
+    req,
+    res,
+    update,
+    message,
+    chatId,
+    text,
+    lowerText,
+    user,
+    userId,
+    displayName,
+    settings,
+    ownerId: OWNER_ID,
+    botId: BOT_ID,
+    botUsername: BOT_USERNAME
+};
+
     if (text) await saveUserHistory(userId, userName, "user", text);
 
     if (await handleVerify(message)) return ok(res);
 
     const commandOnly = text.split("@")[0].toLowerCase();
 
-    if (commandOnly === "/start") {
-      const startText = message.chat.type === "private"
-        ? "🌹 <b>Icha is ready.</b>\n\nAdd me to your group as admin, then use /settings in the group. I will send the private admin settings panel here.\n\nTry: /help"
-        : "🌹 <b>Icha is active in this group.</b>\n\nAdmins: use /settings to open the private control panel.\nMembers: use /help or /rules.";
-      await sendTelegram(chatId, startText, message.message_id);
-      return ok(res);
-    }
-
-    if (commandOnly === "/ping") {
-      await sendTelegram(chatId, "✅ Icha is online.", message.message_id);
-      return ok(res);
-    }
-
-    if (commandOnly === "/debugenv" && userId === OWNER_ID) {
-      await sendTelegram(chatId, `🔧 Env check\nToken: ${process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN ? "✅" : "❌"}\nSupabase URL: ${process.env.SUPABASE_URL ? "✅" : "❌"}\nSupabase key: ${process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌"}\nGemini: ${process.env.GEMINI_API_KEY ? "✅" : "❌"}`, message.message_id);
-      return ok(res);
-    }
-
-    if (commandOnly === "/settings") {
-      await sendSettings(message);
-      return ok(res);
-    }
+    if (await handleCommands(ctx))
+    return ok(res);
 
     if (await handleModerationCommand(message)) return ok(res);
     if (await handleGroupCommand(message)) return ok(res);
