@@ -178,7 +178,27 @@ export default async function handler(req, res) {
 
     if (await handleVerify(message)) return ok(res);
 
-    if (text.split("@")[0].toLowerCase() === "/settings") {
+    const commandOnly = text.split("@")[0].toLowerCase();
+
+    if (commandOnly === "/start") {
+      const startText = message.chat.type === "private"
+        ? "🌹 <b>Icha is ready.</b>\n\nAdd me to your group as admin, then use /settings in the group. I will send the private admin settings panel here.\n\nTry: /help"
+        : "🌹 <b>Icha is active in this group.</b>\n\nAdmins: use /settings to open the private control panel.\nMembers: use /help or /rules.";
+      await sendTelegram(chatId, startText, message.message_id);
+      return ok(res);
+    }
+
+    if (commandOnly === "/ping") {
+      await sendTelegram(chatId, "✅ Icha is online.", message.message_id);
+      return ok(res);
+    }
+
+    if (commandOnly === "/debugenv" && userId === OWNER_ID) {
+      await sendTelegram(chatId, `🔧 Env check\nToken: ${process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN ? "✅" : "❌"}\nSupabase URL: ${process.env.SUPABASE_URL ? "✅" : "❌"}\nSupabase key: ${process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅" : "❌"}\nGemini: ${process.env.GEMINI_API_KEY ? "✅" : "❌"}`, message.message_id);
+      return ok(res);
+    }
+
+    if (commandOnly === "/settings") {
       await sendSettings(message);
       return ok(res);
     }
