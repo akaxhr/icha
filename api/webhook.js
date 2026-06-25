@@ -97,9 +97,9 @@ if (await runCallbackPipeline(update)) {
 
     await logUserTextHistory(message, userId, userName, text);
 
-    if (await handleCommands(ctx)) {
-      return ok(res);
-    }
+if (await handleCommands(message, userId, OWNER_ID)) {
+  return ok(res);
+}
 
     if (await runMessagePipeline(ctx)) {
       return ok(res);
