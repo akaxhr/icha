@@ -1,7 +1,6 @@
 import { logUserTextHistory } from "../lib/modules/userHistoryLogger.js";
 import { handleAiReply } from "../lib/aiReply/index.js";
-import { handleCommands } from "../lib/router/commandRouter.js";
-import "../lib/commands/index.js";
+import { handleCommands } from "../lib/commands/index.js";
 
 import { logIncomingMessage } from "../lib/modules/messageLogger.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
