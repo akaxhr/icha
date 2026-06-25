@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "latest",
+    "@supabase/supabase-js": "latest"
+  },
+  "scripts": {
+    "check": "node --check api/webhook.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
