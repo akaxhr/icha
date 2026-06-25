@@ -1,4 +1,4 @@
-import { saveUserHistory } from "../lib/memory.js";
+import { logUserTextHistory } from "../lib/modules/userHistoryLogger.js";
 import { handleAiReply } from "../lib/aiReply/index.js";
 import { handleCommands } from "../lib/router/commandRouter.js";
 import "../lib/commands/index.js";
