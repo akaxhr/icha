@@ -25,6 +25,17 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;");
 }
 
+function setChecked(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.checked = !!value;
+}
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value || "";
+}
+function toggleSettingsPanel() {
+  document.getElementById("settingsPanel")?.classList.toggle("hidden");
+}
 async function loadGroupSettings() {
   if (!selectedChatId) return;
 
@@ -32,9 +43,19 @@ async function loadGroupSettings() {
     "/api/admin/group-settings?chat_id=" + encodeURIComponent(selectedChatId)
   );
 
-  if (document.getElementById("aiToggle")) {
-    document.getElementById("aiToggle").checked = !!data.ai_enabled;
-  }
+  setChecked("ai_enabled", data.ai_enabled);
+  setChecked("welcome_enabled", data.welcome?.enabled);
+  setChecked("spam_enabled", data.spam?.enabled);
+  setChecked("captcha_enabled", data.captcha?.enabled);
+  setChecked("ai_master", data.ai?.enabled);
+  setChecked("ai_phishing", data.ai?.phishing?.enabled);
+  setChecked("ai_scam", data.ai?.scam?.enabled);
+  setChecked("ai_toxicity", data.ai?.toxicity?.enabled);
+  setChecked("ai_impersonation", data.ai?.impersonation?.enabled);
+  setChecked("ai_nsfw", data.ai?.nsfw?.enabled);
+  setChecked("ai_summary", data.ai?.summary?.enabled);
+  setValue("rulesText", data.rules?.text);
+  setValue("welcomeText", data.welcome?.message);
 }
 async function trackPanelVisit() {
   let visitorId = localStorage.getItem("panel_visitor_id");
@@ -65,6 +86,7 @@ async function trackPanelVisit() {
   });
 }
 
+function checked(id) { return !!document.getElementById(id)?.checked; }
 async function saveGroupSettings() {
   if (!selectedChatId) {
     alert("Select a chat first");
@@ -75,7 +97,20 @@ async function saveGroupSettings() {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
-      ai_enabled: document.getElementById("aiToggle").checked
+      ai_enabled: checked("ai_enabled"),
+      welcome: { enabled: checked("welcome_enabled"), message: document.getElementById("welcomeText")?.value || undefined },
+      rules: { text: document.getElementById("rulesText")?.value || undefined },
+      spam: { enabled: checked("spam_enabled") },
+      captcha: { enabled: checked("captcha_enabled") },
+      ai: {
+        enabled: checked("ai_master"),
+        phishing: { enabled: checked("ai_phishing") },
+        scam: { enabled: checked("ai_scam") },
+        toxicity: { enabled: checked("ai_toxicity") },
+        impersonation: { enabled: checked("ai_impersonation") },
+        nsfw: { enabled: checked("ai_nsfw") },
+        summary: { enabled: checked("ai_summary") }
+      }
     })
   });
 

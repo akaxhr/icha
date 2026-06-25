@@ -24,14 +24,28 @@
         <span id="chatTitle" class="chat-title-top">Select a chat</span>
 
         <div class="topbar-actions">
-          <label class="switch-label">
-            <span>AI</span>
-            <input type="checkbox" id="aiToggle" onchange="saveGroupSettings()" />
-            <span class="switch"></span>
-          </label>
-
+          <button onclick="toggleSettingsPanel()">Settings</button>
           <button class="danger" onclick="deleteChat()">Delete</button>
         </div>
+      </div>
+
+      <div id="settingsPanel" class="settings-panel hidden">
+        <div class="settings-grid">
+          <label><input type="checkbox" id="ai_enabled" onchange="saveGroupSettings()" /> Chat AI replies</label>
+          <label><input type="checkbox" id="welcome_enabled" onchange="saveGroupSettings()" /> Welcome</label>
+          <label><input type="checkbox" id="spam_enabled" onchange="saveGroupSettings()" /> Spam control</label>
+          <label><input type="checkbox" id="captcha_enabled" onchange="saveGroupSettings()" /> Captcha</label>
+          <label><input type="checkbox" id="ai_master" onchange="saveGroupSettings()" /> AI moderation master</label>
+          <label><input type="checkbox" id="ai_phishing" onchange="saveGroupSettings()" /> AI phishing</label>
+          <label><input type="checkbox" id="ai_scam" onchange="saveGroupSettings()" /> AI scam</label>
+          <label><input type="checkbox" id="ai_toxicity" onchange="saveGroupSettings()" /> AI toxicity</label>
+          <label><input type="checkbox" id="ai_impersonation" onchange="saveGroupSettings()" /> AI impersonation</label>
+          <label><input type="checkbox" id="ai_nsfw" onchange="saveGroupSettings()" /> AI NSFW</label>
+          <label><input type="checkbox" id="ai_summary" onchange="saveGroupSettings()" /> AI summary</label>
+        </div>
+        <textarea id="rulesText" placeholder="Group rules"></textarea>
+        <textarea id="welcomeText" placeholder="Welcome message. Use {first_name} and {chat_title}"></textarea>
+        <button onclick="saveGroupSettings()">Save settings</button>
       </div>
 
       <div class="message-search">
