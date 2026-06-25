@@ -1,378 +1,192 @@
-* {
-  box-sizing: border-box;
-}
+import { applyTemplate } from "./defaultSettings.js";
+import { getFullGroupSettings, getNote, listFilters, listNotes, matchFilter, saveFullGroupSettings, setFilter, setNote } from "./groupStore.js";
+import { escapeHtml, isAdmin, kickUser, restrictUser, sendTelegram, userMention } from "./telegram.js";
 
-:root {
-  --bg: #0f1115;
-  --panel: #161b22;
-  --topbar: #1e293b;
-  --hover: #202938;
-  --active: #2d3c52;
-  --search: #1c2431;
-  --border: #293244;
-  --text: #ffffff;
-  --muted: #94a3b8;
-  --accent: #60a5fa;
-  --bubble-in: #1e2532;
-  --bubble-out: #2563eb;
-  --danger: #ef4444;
-}
+const captchaChallenges = new Map();
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
+export async function handleJoinLeave(message) {
+  const chatId = message.chat.id;
+  const s = await getFullGroupSettings(chatId);
 
-.app {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.sidebar {
-  width: 330px;
-  min-width: 330px;
-  max-width: 330px;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-}
-
-.sidebar-header {
-  height: 58px;
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  font-size: 20px;
-  font-weight: 800;
-  background: var(--topbar);
-}
-
-.sidebar-tools,
-.message-search {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-.chat-item {
-  padding: 13px 15px;
-  margin: 6px;
-  border-radius: 12px;
-  cursor: pointer;
-  min-height: 72px;
-  transition: none;
-}
-
-.chat-item:hover {
-  background: var(--hover);
-}
-
-.chat-item.active {
-  background: linear-gradient(90deg, rgba(96,165,250,.2), rgba(96,165,250,.08));
-}
-
-.chat-title {
-  font-size: 15px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-type,
-.chat-time,
-.time {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.topbar {
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 16px;
-  background: var(--topbar);
-}
-
-.chat-title-top {
-  min-width: 0;
-  flex: 1;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.messages {
-  flex: 1;
-  padding: 18px 24px;
-  overflow-y: auto;
-  overflow-anchor: none;
-  background:
-    radial-gradient(circle at top left, rgba(96,165,250,.08), transparent 30%),
-    var(--bg);
-}
-
-.message-row {
-  display: flex;
-  width: 100%;
-  margin-bottom: 9px;
-  animation: none;
-}
-
-.message-row.bot {
-  justify-content: flex-end;
-}
-
-.message-wrap {
-  max-width: 70%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.message-row.bot .message-wrap {
-  align-items: flex-end;
-}
-
-.sender {
-  font-size: 12px;
-  color: var(--accent);
-  margin-bottom: 3px;
-  font-weight: 700;
-}
-
-.bubble {
-  max-width: 560px;
-  padding: 10px 14px;
-  border-radius: 18px 18px 18px 6px;
-  background: var(--bubble-in);
-  color: white;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.message-row.bot .bubble {
-  background: var(--bubble-out);
-  border-radius: 18px 18px 6px 18px;
-}
-
-.message-text {
-  font-size: 15px;
-  line-height: 1.35;
-}
-
-.message-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.reply-preview {
-  border-left: 4px solid var(--accent);
-  background: rgba(255,255,255,.04);
-  border-radius: 8px;
-  padding: 7px 9px;
-  margin-bottom: 7px;
-  font-size: 12px;
-}
-
-.reply-name {
-  font-weight: 800;
-  color: var(--accent);
-  margin-bottom: 2px;
-}
-
-.reply-text {
-  color: #d1d5db;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.reply-button {
-  padding: 3px 9px;
-  font-size: 11px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  color: var(--accent);
-}
-
-.reply-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  padding: 9px 14px;
-  color: #d1d5db;
-  font-size: 13px;
-}
-
-.input-bar {
-  display: flex;
-  gap: 10px;
-  padding: 14px;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-}
-
-input {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  background: var(--search);
-  color: white;
-}
-
-input::placeholder {
-  color: #94a3b8;
-}
-
-button {
-  padding: 10px 17px;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  background: var(--accent);
-  color: white;
-  font-weight: 800;
-}
-
-button:hover {
-  opacity: .9;
-}
-
-.danger {
-  background: var(--danger);
-}
-
-.switch-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
-
-.switch-label input {
-  display: none;
-}
-
-.switch {
-  width: 40px;
-  height: 22px;
-  background: #475569;
-  border-radius: 999px;
-  position: relative;
-}
-
-.switch::before {
-  content: "";
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: .2s;
-}
-
-.switch-label input:checked + .switch {
-  background: var(--accent);
-}
-
-.switch-label input:checked + .switch::before {
-  left: 20px;
-}
-
-.empty {
-  color: var(--muted);
-  text-align: center;
-  margin-top: 40px;
-}
-
-.hidden {
-  display: none;
-}
-
-::-webkit-scrollbar {
-  width: 7px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 270px;
-    min-width: 270px;
-    max-width: 270px;
+  if (message.new_chat_members?.length) {
+    for (const member of message.new_chat_members) {
+      if (member.is_bot) continue;
+      if (s.captcha?.enabled) {
+        const a = Math.floor(Math.random() * 8) + 2;
+        const b = Math.floor(Math.random() * 8) + 2;
+        captchaChallenges.set(`${chatId}:${member.id}`, { answer: String(a + b), until: Date.now() + (s.captcha.timeout_minutes || 3) * 60000 });
+        await restrictUser(chatId, member.id, (s.captcha.timeout_minutes || 3) * 60);
+        await sendTelegram(chatId, `🔐 ${userMention(member)}, solve this to speak: <b>${a} + ${b} = ?</b>\nReply with /verify answer`);
+      } else if (s.welcome?.enabled) {
+        await sendTelegram(chatId, applyTemplate(s.welcome.message, { ...member, chat_title: message.chat.title }));
+      }
+    }
+    return true;
   }
 
-  .message-wrap {
-    max-width: 86%;
+  if (message.left_chat_member && s.welcome?.goodbye_enabled) {
+    await sendTelegram(chatId, applyTemplate(s.welcome.goodbye_message, { ...message.left_chat_member, chat_title: message.chat.title }));
+    return true;
+  }
+  return false;
+}
+
+export async function handleVerify(message) {
+  const text = String(message.text || "").trim();
+  if (!text.startsWith("/verify")) return false;
+  const chatId = message.chat.id;
+  const key = `${chatId}:${message.from.id}`;
+  const ch = captchaChallenges.get(key);
+  if (!ch) {
+    await sendTelegram(chatId, "No pending captcha for you.", message.message_id);
+    return true;
+  }
+  const answer = text.split(/\s+/)[1];
+  if (Date.now() > ch.until || answer !== ch.answer) {
+    await sendTelegram(chatId, "Wrong or expired captcha.", message.message_id);
+    return true;
+  }
+  captchaChallenges.delete(key);
+  const { unrestrictUser } = await import("./telegram.js");
+  await unrestrictUser(chatId, message.from.id);
+  await sendTelegram(chatId, `✅ Verified ${userMention(message.from)}.`, message.message_id);
+  return true;
+}
+
+export async function handleGroupCommand(message) {
+  const chatId = message.chat.id;
+  const text = String(message.text || "").trim();
+  const [cmdRaw, ...args] = text.split(/\s+/);
+  const cmd = cmdRaw.split("@")[0].toLowerCase();
+
+  if (cmd === "/ichahelp" || cmd === "/help") {
+    await sendTelegram(chatId, `🌹 <b>Icha Help</b>\n\n<b>Admin</b>\n/settings - private settings panel\n/welcome on|off\n/setwelcome text\n/setrules text\n/lock type, /unlock type, /locks\n/warn, /unwarn, /warnings\n/mute, /unmute, /ban, /unban, /kick\n/setwarnlimit 3\n/setwarnaction mute|kick|ban\n/filter trigger | reply\n/note name | text\n\n<b>Members</b>\n/rules\n/get note\n/notes\n/psst message\n/rose`, message.message_id);
+    return true;
   }
 
-  .bubble {
-    max-width: 100%;
+  if (cmd === "/rules") {
+    const s = await getFullGroupSettings(chatId);
+    await sendTelegram(chatId, s.rules?.text || "No rules set.", message.message_id);
+    return true;
   }
 
-  .topbar-actions {
-    gap: 6px;
+  if (cmd === "/rose") {
+    await sendTelegram(chatId, "🌹 Icha has Rose-style moderation: warns, locks, filters, notes, rules, captcha, antispam, and private admin settings.", message.message_id);
+    return true;
   }
+
+  if (cmd === "/psst") {
+    const s = await getFullGroupSettings(chatId);
+    if (!s.psst?.enabled) return sendTelegram(chatId, "PSST is disabled here.", message.message_id), true;
+    const body = args.join(" ").slice(0, s.psst.max_length || 500);
+    if (!body) return sendTelegram(chatId, "Usage: /psst your secret message", message.message_id), true;
+    await sendTelegram(chatId, `🤫 <b>Psst...</b>\n\n${escapeHtml(body)}`);
+    return true;
+  }
+
+  if (cmd === "/get") {
+    const name = args[0];
+    if (!name) return sendTelegram(chatId, "Usage: /get note_name", message.message_id), true;
+    const note = await getNote(chatId, name);
+    await sendTelegram(chatId, note || "Note not found.", message.message_id);
+    return true;
+  }
+
+  if (cmd === "/notes") {
+    const notes = await listNotes(chatId);
+    await sendTelegram(chatId, notes.length ? `📝 Notes:\n${notes.map(n => `• ${escapeHtml(n)}`).join("\n")}` : "No notes saved.", message.message_id);
+    return true;
+  }
+
+  if (cmd === "/filters") {
+    const filters = await listFilters(chatId);
+    await sendTelegram(chatId, filters.length ? `🔎 Filters:\n${filters.map(n => `• ${escapeHtml(n)}`).join("\n")}` : "No filters saved.", message.message_id);
+    return true;
+  }
+
+  const adminCommands = ["/welcome","/setwelcome","/setrules","/note","/filter","/captcha","/spam","/ai","/aisettings"];
+  if (!adminCommands.includes(cmd)) return false;
+  if (!(await isAdmin(chatId, message.from.id))) {
+    await sendTelegram(chatId, "Only admins can use this.", message.message_id);
+    return true;
+  }
+
+  const s = await getFullGroupSettings(chatId);
+  if (cmd === "/welcome") {
+    const value = args[0]?.toLowerCase();
+    if (!["on","off"].includes(value)) return sendTelegram(chatId, "Usage: /welcome on|off", message.message_id), true;
+    s.welcome.enabled = value === "on";
+    await saveFullGroupSettings(chatId, s);
+    await sendTelegram(chatId, `Welcome ${s.welcome.enabled ? "enabled" : "disabled"}.`, message.message_id);
+    return true;
+  }
+  if (cmd === "/setwelcome") {
+    const body = text.replace(/^\/setwelcome(@\w+)?\s*/i, "").trim();
+    if (!body) return sendTelegram(chatId, "Usage: /setwelcome Welcome {first_name} to {chat_title}", message.message_id), true;
+    s.welcome.message = body;
+    await saveFullGroupSettings(chatId, s);
+    await sendTelegram(chatId, "Welcome message saved.", message.message_id);
+    return true;
+  }
+  if (cmd === "/setrules") {
+    const body = text.replace(/^\/setrules(@\w+)?\s*/i, "").trim();
+    if (!body) return sendTelegram(chatId, "Usage: /setrules rules text", message.message_id), true;
+    s.rules.text = body;
+    await saveFullGroupSettings(chatId, s);
+    await sendTelegram(chatId, "Rules saved.", message.message_id);
+    return true;
+  }
+  if (cmd === "/note") {
+    const body = text.replace(/^\/note(@\w+)?\s*/i, "");
+    const [name, ...rest] = body.split("|").map(x => x.trim());
+    if (!name || !rest.join("|").trim()) return sendTelegram(chatId, "Usage: /note name | note text", message.message_id), true;
+    await setNote(chatId, name, rest.join("|").trim());
+    await sendTelegram(chatId, `Note saved: ${escapeHtml(name)}`, message.message_id);
+    return true;
+  }
+  if (cmd === "/filter") {
+    const body = text.replace(/^\/filter(@\w+)?\s*/i, "");
+    const [trigger, ...rest] = body.split("|").map(x => x.trim());
+    if (!trigger || !rest.join("|").trim()) return sendTelegram(chatId, "Usage: /filter trigger | reply text", message.message_id), true;
+    await setFilter(chatId, trigger, rest.join("|").trim());
+    await sendTelegram(chatId, `Filter saved: ${escapeHtml(trigger)}`, message.message_id);
+    return true;
+  }
+  if (cmd === "/captcha") {
+    const value = args[0]?.toLowerCase();
+    if (!["on","off"].includes(value)) return sendTelegram(chatId, "Usage: /captcha on|off", message.message_id), true;
+    s.captcha.enabled = value === "on";
+    await saveFullGroupSettings(chatId, s);
+    await sendTelegram(chatId, `Captcha ${s.captcha.enabled ? "enabled" : "disabled"}.`, message.message_id);
+    return true;
+  }
+  if (cmd === "/spam") {
+    const value = args[0]?.toLowerCase();
+    if (!["on","off"].includes(value)) return sendTelegram(chatId, "Usage: /spam on|off", message.message_id), true;
+    s.spam.enabled = value === "on";
+    await saveFullGroupSettings(chatId, s);
+    await sendTelegram(chatId, `Spam control ${s.spam.enabled ? "enabled" : "disabled"}.`, message.message_id);
+    return true;
+  }
+  if (cmd === "/ai" || cmd === "/aisettings") {
+    const value = args[0]?.toLowerCase();
+    if (["on","off"].includes(value)) {
+      s.ai.enabled = value === "on";
+      await saveFullGroupSettings(chatId, s);
+      await sendTelegram(chatId, `AI moderation ${s.ai.enabled ? "enabled" : "disabled"}.`, message.message_id);
+    } else {
+      await sendTelegram(chatId, "Use /settings for full private AI toggles, or /ai on/off.", message.message_id);
+    }
+    return true;
+  }
+  return false;
 }
-.settings-panel {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel);
-}
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 8px 14px;
-  margin-bottom: 10px;
-}
-.settings-grid label {
-  font-size: 13px;
-  color: var(--text);
-}
-.settings-panel textarea {
-  width: 100%;
-  min-height: 54px;
-  margin: 6px 0;
-  padding: 9px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--search);
-  color: var(--text);
+
+export async function handleAutoFilter(message) {
+  const reply = await matchFilter(message.chat.id, message.text || message.caption || "");
+  if (reply) {
+    await sendTelegram(message.chat.id, reply, message.message_id);
+    return true;
+  }
+  return false;
 }
