@@ -5,7 +5,7 @@ import "../lib/commands/index.js";
 
 import { logIncomingMessage } from "../lib/modules/messageLogger.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
-import { handleCallback } from "../lib/settingsUi.js";
+import { runCallbackPipeline } from "../lib/modules/callbackPipeline.js";
 import { runMessagePipeline } from "../lib/modules/messagePipeline.js";
 import { getAdminAction, handleAdminApi } from "../lib/admin/index.js";
 
@@ -58,10 +58,9 @@ export default async function handler(req, res) {
 
     const update = req.body || {};
 
-    if (update.callback_query) {
-      await handleCallback(update.callback_query);
-      return ok(res);
-    }
+if (await runCallbackPipeline(update)) {
+  return ok(res);
+}
 
     const message = update.message || update.edited_message;
 
