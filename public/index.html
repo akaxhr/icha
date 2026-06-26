@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Icha Admin Panel</title>
+  <title>Icha Panel</title>
   <link rel="stylesheet" href="/admin.css" />
 </head>
 <body>
   <div class="tg-app">
     <aside class="tg-list">
       <div class="tg-search-row">
-        <button class="hamburger">☰</button>
+        <button class="icon-btn" id="menuBtn" aria-label="Menu">
+          <span class="i i-menu"></span>
+        </button>
+
         <div class="tg-search">
-          <span>🔍</span>
+          <span class="i i-search"></span>
           <input id="searchInput" placeholder="Search" />
         </div>
       </div>
@@ -24,13 +27,18 @@
 
     <main class="tg-chat">
       <header class="tg-chat-head">
-        <div id="chatAvatar" class="small-avatar">🌹</div>
+        <div id="chatAvatar" class="small-avatar">I</div>
         <div class="head-info">
           <b id="groupTitle">Select chat</b>
           <span id="groupMeta">Messages will appear here</span>
         </div>
-        <button id="searchBtn">🔍</button>
-        <button id="moreBtn">⋮</button>
+
+        <button class="icon-btn" id="searchBtn">
+          <span class="i i-search"></span>
+        </button>
+        <button class="icon-btn" id="moreBtn">
+          <span class="i i-more"></span>
+        </button>
       </header>
 
       <div class="tg-pinned">
@@ -43,29 +51,42 @@
       </section>
 
       <footer class="tg-input">
-        <button>😊</button>
+        <button class="icon-btn">
+          <span class="i i-emoji"></span>
+        </button>
+
         <input id="replyInput" placeholder="Message" />
-        <button>📎</button>
-        <button id="sendBtn">🎙</button>
+
+        <button class="icon-btn">
+          <span class="i i-attach"></span>
+        </button>
+
+        <button class="icon-btn send" id="sendBtn">
+          <span class="i i-send"></span>
+        </button>
       </footer>
     </main>
 
     <aside class="tg-info">
       <div class="info-top">
-        <button>×</button>
+        <button class="icon-btn">
+          <span class="i i-close"></span>
+        </button>
         <h3>Group Info</h3>
-        <button>✎</button>
+        <button class="icon-btn">
+          <span class="i i-edit"></span>
+        </button>
       </div>
 
       <div class="info-profile">
-        <div id="infoAvatar" class="info-avatar">🌹</div>
+        <div id="infoAvatar" class="info-avatar">I</div>
         <h2 id="infoTitle">Group</h2>
         <p id="infoMeta">0 members</p>
       </div>
 
       <div class="info-card">
         <div class="info-row">
-          <span>ⓘ</span>
+          <span class="i i-info"></span>
           <div>
             <b>“Give respect, get respect” 🤝</b>
             <p id="groupDesc">No group description.</p>
@@ -74,7 +95,7 @@
         </div>
 
         <div class="info-row">
-          <span>🔗</span>
+          <span class="i i-link"></span>
           <div>
             <b id="groupLink">No link</b>
             <small>Link</small>
@@ -82,7 +103,7 @@
         </div>
 
         <div class="info-row">
-          <span>🔔</span>
+          <span class="i i-bell"></span>
           <div>
             <b>Notifications</b>
           </div>
@@ -98,7 +119,6 @@
         <button>Media</button>
         <button>Files</button>
         <button>Links</button>
-        <button>Music</button>
       </div>
     </aside>
   </div>
