@@ -1,71 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Ichas Panel</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="/favicon.ico" />
+  <title>Icha Admin Panel</title>
   <link rel="stylesheet" href="/admin.css" />
 </head>
-
 <body>
   <div class="app">
-    <div class="sidebar">
-      <div class="sidebar-header">Im_icha_bot</div>
+    <aside class="sidebar">
+      <button class="menu">☰</button>
+      <div class="nav active">💬<span>Chats</span></div>
+      <div class="nav">👥<span>Groups</span></div>
+      <div class="nav">⚙️<span>Settings</span></div>
+      <div class="nav">🕹<span>Commands</span></div>
+      <div class="nav">📊<span>Stats</span></div>
+      <div class="nav logout">↪<span>Logout</span></div>
+    </aside>
 
-      <div class="sidebar-tools">
-        <input id="chatSearch" placeholder="Search chats/users..." oninput="loadChats()" />
+    <section class="chat-list">
+      <div class="search">
+        <span>🔍</span>
+        <input id="searchInput" placeholder="Search" />
       </div>
 
-      <div id="chats"></div>
-    </div>
+      <div id="chatList" class="chats">
+        <div class="loading">Loading chats...</div>
+      </div>
+    </section>
 
-    <div class="main">
-      <div class="topbar">
-        <span id="chatTitle" class="chat-title-top">Select a chat</span>
+    <main class="chat-view">
+      <header class="chat-header">
+        <img id="groupAvatar" src="/default-avatar.png" onerror="this.style.display='none'" />
+        <div>
+          <h2 id="groupTitle">Select a chat</h2>
+          <p id="groupMeta">Messages will appear here</p>
+        </div>
+        <div class="header-actions">
+          <button>🔍</button>
+          <button>⋮</button>
+        </div>
+      </header>
 
-        <div class="topbar-actions">
-          <button onclick="toggleSettingsPanel()">Settings</button>
-          <button class="danger" onclick="deleteChat()">Delete</button>
+      <div class="pinned">
+        <b>📌 Pinned message</b>
+        <span>Beat me in Sudoku 🏆</span>
+      </div>
+
+      <div id="messages" class="messages">
+        <div class="empty">Select a group from the left</div>
+      </div>
+
+      <footer class="reply-box">
+        <input id="replyInput" placeholder="Message" />
+        <button id="sendBtn">➤</button>
+      </footer>
+    </main>
+
+    <aside class="info-panel">
+      <div class="profile-card">
+        <div class="big-avatar">🌹</div>
+        <h2 id="infoTitle">Icha Panel</h2>
+        <p id="infoMeta">Bot admin dashboard</p>
+
+        <div class="quick-icons">
+          <button>ℹ️<br>Info</button>
+          <button>👥<br>Members</button>
+          <button>🛡<br>Perms</button>
+          <button>⚙️<br>Settings</button>
         </div>
       </div>
 
-      <div id="settingsPanel" class="settings-panel hidden">
-        <div class="settings-grid">
-          <label><input type="checkbox" id="ai_enabled" onchange="saveGroupSettings()" /> Chat AI replies</label>
-          <label><input type="checkbox" id="welcome_enabled" onchange="saveGroupSettings()" /> Welcome</label>
-          <label><input type="checkbox" id="spam_enabled" onchange="saveGroupSettings()" /> Spam control</label>
-          <label><input type="checkbox" id="captcha_enabled" onchange="saveGroupSettings()" /> Captcha</label>
-          <label><input type="checkbox" id="ai_master" onchange="saveGroupSettings()" /> AI moderation master</label>
-          <label><input type="checkbox" id="ai_phishing" onchange="saveGroupSettings()" /> AI phishing</label>
-          <label><input type="checkbox" id="ai_scam" onchange="saveGroupSettings()" /> AI scam</label>
-          <label><input type="checkbox" id="ai_toxicity" onchange="saveGroupSettings()" /> AI toxicity</label>
-          <label><input type="checkbox" id="ai_impersonation" onchange="saveGroupSettings()" /> AI impersonation</label>
-          <label><input type="checkbox" id="ai_nsfw" onchange="saveGroupSettings()" /> AI NSFW</label>
-          <label><input type="checkbox" id="ai_summary" onchange="saveGroupSettings()" /> AI summary</label>
-        </div>
-        <textarea id="rulesText" placeholder="Group rules"></textarea>
-        <textarea id="welcomeText" placeholder="Welcome message. Use {first_name} and {chat_title}"></textarea>
-        <button onclick="saveGroupSettings()">Save settings</button>
+      <div class="card">
+        <h3>Bot Settings</h3>
+        <div class="setting-row"><span>Welcome Message</span><b class="on">On</b></div>
+        <div class="setting-row"><span>AI Settings</span><b class="on">On</b></div>
+        <div class="setting-row"><span>Antispam</span><b class="on">On</b></div>
+        <div class="setting-row"><span>Auto Delete</span><b class="off">Off</b></div>
       </div>
 
-      <div class="message-search">
-        <input id="messageSearch" placeholder="Search messages/users..." oninput="loadMessages()" />
+      <div class="card">
+        <h3>Quick Actions</h3>
+        <button class="action">📢 Broadcast</button>
+        <button class="action danger">🗑 Clear Chat</button>
+        <button class="action primary">⚙️ Open Group Settings</button>
       </div>
-
-      <div class="messages" id="messages">
-        <div class="empty">No chat selected</div>
-      </div>
-
-      <div id="replyBox" class="reply-box hidden">
-        <span id="replyText"></span>
-        <button onclick="clearReply()">×</button>
-      </div>
-
-      <div class="input-bar">
-        <input id="text" placeholder="Type as bot..." onkeydown="handleEnter(event)" />
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
+    </aside>
   </div>
 
   <script src="/admin.js"></script>
