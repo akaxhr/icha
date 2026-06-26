@@ -96,6 +96,10 @@ if (await runCallbackPipeline(update)) {
 
     await logUserTextHistory(message, userId, userName, text);
 
+    if (await handleSettingsInput(message, userId)) {
+  return ok(res);
+}
+
 if (await handleCommands(message, userId, OWNER_ID)) {
   return ok(res);
 }
