@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Icha Button Builder</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .add { background: white; color: #7b61ff; }
+    .save { background: #59a970; color: white; width: 100%; margin-top: 20px; }
+    .box {
+      background: #222;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background: #1b1b1b;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <center>
+    <button class="add" onclick="addButton()">Add row</button>
+  </center>
+
+  <div id="buttons"></div>
+
+  <button class="save" onclick="save()">SAVE</button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const buttons = [];
+
+    function addButton() {
+      const index = buttons.length;
+      buttons.push({ type: "link", name: "", link: "" });
+
+      const div = document.createElement("div");
+      div.className = "box";
+      div.innerHTML = `
+        <h3>Manage button</h3>
+
+        <label>Type</label>
+        <select onchange="buttons[${index}].type=this.value">
+          <option value="link">Link</option>
+          <option value="popup">Popup</option>
+          <option value="alert">Alert</option>
+          <option value="copy">Copy</option>
+          <option value="share">Share</option>
+          <option value="rules">Rules</option>
+        </select>
+
+        <label>Name</label>
+        <input placeholder="Button name" oninput="buttons[${index}].name=this.value" />
+
+        <label>Value</label>
+        <input placeholder="t.me/username or text" oninput="buttons[${index}].link=this.value" />
+
+        <button style="background:#d94c4c;color:white;width:48%" onclick="this.parentElement.remove()">Delete</button>
+      `;
+
+      document.getElementById("buttons").appendChild(div);
+    }
+
+    async function save() {
+      const params = new URLSearchParams(location.search);
+      const groupId = params.get("group_id");
+
+      const payload = {
+        action: "save_rules_buttons",
+        group_id: groupId,
+        buttons
+      };
+
+      tg.sendData(JSON.stringify(payload));
+      tg.close();
+    }
+  </script>
+</body>
+</html>
