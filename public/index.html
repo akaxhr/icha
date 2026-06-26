@@ -7,83 +7,98 @@
   <link rel="stylesheet" href="/admin.css" />
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <button class="menu">☰</button>
-      <div class="nav active">💬<span>Chats</span></div>
-      <div class="nav">👥<span>Groups</span></div>
-      <div class="nav">⚙️<span>Settings</span></div>
-      <div class="nav">🕹<span>Commands</span></div>
-      <div class="nav">📊<span>Stats</span></div>
-      <div class="nav logout">↪<span>Logout</span></div>
-    </aside>
-
-    <section class="chat-list">
-      <div class="search">
-        <span>🔍</span>
-        <input id="searchInput" placeholder="Search" />
+  <div class="tg-app">
+    <aside class="tg-list">
+      <div class="tg-search-row">
+        <button class="hamburger">☰</button>
+        <div class="tg-search">
+          <span>🔍</span>
+          <input id="searchInput" placeholder="Search" />
+        </div>
       </div>
 
-      <div id="chatList" class="chats">
+      <div id="chatList" class="tg-chats">
         <div class="loading">Loading chats...</div>
       </div>
-    </section>
+    </aside>
 
-    <main class="chat-view">
-      <header class="chat-header">
-        <img id="groupAvatar" src="/default-avatar.png" onerror="this.style.display='none'" />
-        <div>
-          <h2 id="groupTitle">Select a chat</h2>
-          <p id="groupMeta">Messages will appear here</p>
+    <main class="tg-chat">
+      <header class="tg-chat-head">
+        <div id="chatAvatar" class="small-avatar">🌹</div>
+        <div class="head-info">
+          <b id="groupTitle">Select chat</b>
+          <span id="groupMeta">Messages will appear here</span>
         </div>
-        <div class="header-actions">
-          <button>🔍</button>
-          <button>⋮</button>
-        </div>
+        <button id="searchBtn">🔍</button>
+        <button id="moreBtn">⋮</button>
       </header>
 
-      <div class="pinned">
-        <b>📌 Pinned message</b>
-        <span>Beat me in Sudoku 🏆</span>
+      <div class="tg-pinned">
+        <span>Pinned message</span>
+        <b id="pinnedText">Beat me in Sudoku 🏆</b>
       </div>
 
-      <div id="messages" class="messages">
-        <div class="empty">Select a group from the left</div>
-      </div>
+      <section id="messages" class="tg-messages">
+        <div class="empty">Select a chat</div>
+      </section>
 
-      <footer class="reply-box">
+      <footer class="tg-input">
+        <button>😊</button>
         <input id="replyInput" placeholder="Message" />
-        <button id="sendBtn">➤</button>
+        <button>📎</button>
+        <button id="sendBtn">🎙</button>
       </footer>
     </main>
 
-    <aside class="info-panel">
-      <div class="profile-card">
-        <div class="big-avatar">🌹</div>
-        <h2 id="infoTitle">Icha Panel</h2>
-        <p id="infoMeta">Bot admin dashboard</p>
+    <aside class="tg-info">
+      <div class="info-top">
+        <button>×</button>
+        <h3>Group Info</h3>
+        <button>✎</button>
+      </div>
 
-        <div class="quick-icons">
-          <button>ℹ️<br>Info</button>
-          <button>👥<br>Members</button>
-          <button>🛡<br>Perms</button>
-          <button>⚙️<br>Settings</button>
+      <div class="info-profile">
+        <div id="infoAvatar" class="info-avatar">🌹</div>
+        <h2 id="infoTitle">Group</h2>
+        <p id="infoMeta">0 members</p>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
+          <span>ⓘ</span>
+          <div>
+            <b>“Give respect, get respect” 🤝</b>
+            <p id="groupDesc">No group description.</p>
+            <small>Info</small>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span>🔗</span>
+          <div>
+            <b id="groupLink">No link</b>
+            <small>Link</small>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span>🔔</span>
+          <div>
+            <b>Notifications</b>
+          </div>
+          <label class="switch">
+            <input type="checkbox" checked />
+            <i></i>
+          </label>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Bot Settings</h3>
-        <div class="setting-row"><span>Welcome Message</span><b class="on">On</b></div>
-        <div class="setting-row"><span>AI Settings</span><b class="on">On</b></div>
-        <div class="setting-row"><span>Antispam</span><b class="on">On</b></div>
-        <div class="setting-row"><span>Auto Delete</span><b class="off">Off</b></div>
-      </div>
-
-      <div class="card">
-        <h3>Quick Actions</h3>
-        <button class="action">📢 Broadcast</button>
-        <button class="action danger">🗑 Clear Chat</button>
-        <button class="action primary">⚙️ Open Group Settings</button>
+      <div class="info-tabs">
+        <button class="active">Members</button>
+        <button>Media</button>
+        <button>Files</button>
+        <button>Links</button>
+        <button>Music</button>
       </div>
     </aside>
   </div>
