@@ -1,166 +1,267 @@
-const chatListEl = document.getElementById("chatList");
-const messagesEl = document.getElementById("messages");
-const groupTitleEl = document.getElementById("groupTitle");
-const groupMetaEl = document.getElementById("groupMeta");
-const infoTitleEl = document.getElementById("infoTitle");
-const infoMetaEl = document.getElementById("infoMeta");
-const chatAvatarEl = document.getElementById("chatAvatar");
-const infoAvatarEl = document.getElementById("infoAvatar");
-const replyInput = document.getElementById("replyInput");
-const sendBtn = document.getElementById("sendBtn");
-const searchInput = document.getElementById("searchInput");
-
 let selectedChatId = null;
-let allChats = [];
+let selectedChatTitle = null;
+let replyToMessageId = null;
+let replyToName = null;
 
 async function api(path, options = {}) {
-  const res = await fetch(path, {
-    headers: { "Content-Type": "application/json" },
-    ...options
-  });
+  options.headers = {
+    ...(options.headers || {}),
+    "Content-Type": "application/json"
+  };
 
-  const text = await res.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(text || "Invalid JSON response");
-  }
+  const res = await fetch(path, options);
+  return res.json();
 }
 
-function escapeHtml(value = "") {
-  return String(value)
+function formatTime(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleString();
+}
+
+function escapeHtml(text) {
+  return String(text || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
 
-function avatarText(title = "?") {
-  return String(title).trim().charAt(0).toUpperCase() || "?";
-}
+async function loadGroupSettings() {
+  if (!selectedChatId) return;
 
-function time(value) {
-  return new Date(value || Date.now()).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit"
+  const data = await api(
+    "/api/admin/group-settings?chat_id=" + encodeURIComponent(selectedChatId)
+  );
+
+  if (document.getElementById("aiToggle")) {
+    document.getElementById("aiToggle").checked = !!data.ai_enabled;
+  }
+}
+async function trackPanelVisit() {
+  let visitorId = localStorage.getItem("panel_visitor_id");
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem("panel_visitor_id", visitorId);
+  }
+
+  await api("/api/admin/panel-visit", {
+    method: "POST",
+    body: JSON.stringify({
+      visitor_id: visitorId,
+      page: location.pathname,
+      hostname: location.hostname,
+      language: navigator.language,
+      platform: navigator.platform,
+      user_agent: navigator.userAgent,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      screen_width: screen.width,
+      screen_height: screen.height,
+      window_width: window.innerWidth,
+      window_height: window.innerHeight,
+      device_pixel_ratio: window.devicePixelRatio,
+      dark_mode: window.matchMedia("(prefers-color-scheme: dark)").matches,
+      touch_support: navigator.maxTouchPoints > 0
+    })
   });
 }
 
-function renderChats(chats) {
-  if (!chats.length) {
-    chatListEl.innerHTML = `<div class="loading">No chats found</div>`;
+async function saveGroupSettings() {
+  if (!selectedChatId) {
+    alert("Select a chat first");
     return;
   }
 
-  chatListEl.innerHTML = chats.map(chat => {
-    const title = chat.chat_title || chat.chat_id;
-    const active = String(chat.chat_id) === String(selectedChatId);
-
-    return `
-      <div class="chat-item ${active ? "active" : ""}" data-chat-id="${chat.chat_id}">
-        <div class="avatar">${avatarText(title)}</div>
-        <div class="chat-body">
-          <div class="chat-title">${escapeHtml(title)}</div>
-          <div class="chat-preview">${escapeHtml(chat.last_message || chat.chat_type || "chat")}</div>
-        </div>
-        <div class="chat-time">${time(chat.created_at)}</div>
-      </div>
-    `;
-  }).join("");
-
-  document.querySelectorAll(".chat-item").forEach(item => {
-    item.onclick = () => selectChat(item.dataset.chatId);
-  });
-}
-
-async function loadChats() {
-  chatListEl.innerHTML = `<div class="loading">Loading chats...</div>`;
-  const data = await api("/api/webhook?admin=chat");
-  allChats = data.chats || [];
-  renderChats(allChats);
-
-  if (allChats.length && !selectedChatId) {
-    selectChat(allChats[0].chat_id);
-  }
-}
-
-async function selectChat(chatId) {
-  selectedChatId = chatId;
-
-  const chat = allChats.find(c => String(c.chat_id) === String(chatId));
-  const title = chat?.chat_title || chatId;
-  const avatar = avatarText(title);
-
-  groupTitleEl.textContent = title;
-  groupMetaEl.textContent = chat?.chat_type || "Group";
-  infoTitleEl.textContent = title;
-  infoMetaEl.textContent = `${chat?.chat_type || "Group"} • ${chatId}`;
-  chatAvatarEl.textContent = avatar;
-  infoAvatarEl.textContent = avatar;
-
-  renderChats(allChats);
-  await loadMessages(chatId);
-}
-
-function renderMessages(messages) {
-  if (!messages.length) {
-    messagesEl.innerHTML = `<div class="empty">No messages yet</div>`;
-    return;
-  }
-
-  messagesEl.innerHTML = messages.map(msg => {
-    const isBot = msg.is_bot;
-
-    return `
-      <div class="message ${isBot ? "me" : ""}">
-        ${!isBot ? `<b>${escapeHtml(msg.username || "User")}</b>` : ""}
-        <div>${escapeHtml(msg.message_text || "")}</div>
-        <small>${time(msg.created_at)}</small>
-      </div>
-    `;
-  }).join("");
-
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-async function loadMessages(chatId) {
-  messagesEl.innerHTML = `<div class="empty">Loading messages...</div>`;
-  const data = await api(`/api/webhook?admin=messages&chat_id=${encodeURIComponent(chatId)}`);
-  renderMessages(data.messages || []);
-}
-
-async function sendPanelReply() {
-  const text = replyInput.value.trim();
-  if (!selectedChatId || !text) return;
-
-  replyInput.value = "";
-
-  await api("/api/webhook?admin=messages", {
+  await api("/api/admin/group-settings", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
-      text
+      ai_enabled: document.getElementById("aiToggle").checked
     })
   });
 
-  await loadMessages(selectedChatId);
+  await loadGroupSettings();
 }
 
-sendBtn.onclick = sendPanelReply;
+async function loadChats() {
+  const data = await api("/api/admin/chat");
+  const box = document.getElementById("chats");
+  box.innerHTML = "";
 
-replyInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendPanelReply();
-});
+  if (!data.chats?.length) {
+    box.innerHTML = `<div class="empty">No chats yet</div>`;
+    return;
+  }
 
-searchInput.addEventListener("input", () => {
-  const q = searchInput.value.toLowerCase().trim();
-  const filtered = allChats.filter(chat =>
-    String(chat.chat_title || chat.chat_id).toLowerCase().includes(q)
+  const search = document.getElementById("chatSearch")?.value.toLowerCase() || "";
+
+  const chats = data.chats.filter(chat =>
+    String(chat.chat_title || "").toLowerCase().includes(search) ||
+    String(chat.chat_id || "").toLowerCase().includes(search) ||
+    String(chat.chat_type || "").toLowerCase().includes(search)
   );
-  renderChats(filtered);
-});
 
-loadChats().catch(err => {
-  console.error(err);
-  chatListEl.innerHTML = `<div class="loading">Failed to load chats</div>`;
-});
+  chats.forEach(chat => {
+    const div = document.createElement("div");
+    div.className = "chat-item";
+
+    if (String(chat.chat_id) === String(selectedChatId)) {
+      div.classList.add("active");
+    }
+
+    div.innerHTML = `
+      <div class="chat-title">${escapeHtml(chat.chat_title || chat.chat_id)}</div>
+      <div class="chat-type">${escapeHtml(chat.chat_type || "chat")}</div>
+      <div class="chat-time">${formatTime(chat.created_at)}</div>
+    `;
+
+    div.onclick = async () => {
+      selectedChatId = chat.chat_id;
+      selectedChatTitle = chat.chat_title || chat.chat_id;
+      document.getElementById("chatTitle").innerText = selectedChatTitle;
+
+      clearReply();
+
+      await loadMessages();
+      await loadGroupSettings();
+      await loadChats();
+    };
+
+    box.appendChild(div);
+  });
+}
+
+async function loadMessages() {
+  if (!selectedChatId) return;
+
+  const box = document.getElementById("messages");
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  const search = document.getElementById("messageSearch")?.value || "";
+
+  const data = await api(
+    "/api/admin/messages?chat_id=" +
+      encodeURIComponent(selectedChatId) +
+      "&search=" +
+      encodeURIComponent(search)
+  );
+
+  box.innerHTML = "";
+
+  if (!data.messages?.length) {
+    box.innerHTML = `<div class="empty">No messages yet</div>`;
+    return;
+  }
+
+  data.messages.forEach(m => {
+    const row = document.createElement("div");
+    row.className = "message-row " + (m.is_bot ? "bot" : "");
+
+    const username = m.username || (m.is_bot ? "Bot" : "User");
+    const messageText = m.message_text || "";
+    const safeUsername = escapeHtml(username);
+    const safeMessage = escapeHtml(messageText).replaceAll("'", "\\'");
+
+    row.innerHTML = `
+      <div class="message-wrap">
+        <div class="sender">${safeUsername}</div>
+
+        <div class="bubble">
+          <div class="message-text">${escapeHtml(messageText)}</div>
+        </div>
+
+        <div class="message-meta">
+          <span class="time">${formatTime(m.created_at)}</span>
+          ${
+            m.telegram_message_id
+              ? `<button class="reply-button" onclick="selectReply(${m.telegram_message_id}, '${safeUsername}', '${safeMessage}')">Reply</button>`
+              : ""
+          }
+        </div>
+      </div>
+    `;
+
+    box.appendChild(row);
+  });
+
+  if (nearBottom) {
+    box.scrollTop = box.scrollHeight;
+  }
+}
+
+function selectReply(messageId, username, text) {
+  replyToMessageId = messageId;
+  replyToName = username;
+
+  document.getElementById("replyText").innerText = "Replying to " + username;
+  document.getElementById("replyBox").classList.remove("hidden");
+}
+
+function clearReply() {
+  replyToMessageId = null;
+  replyToName = null;
+
+  document.getElementById("replyText").innerText = "";
+  document.getElementById("replyBox").classList.add("hidden");
+}
+
+async function sendMessage() {
+  const input = document.getElementById("text");
+  const text = input.value.trim();
+
+  if (!selectedChatId) {
+    alert("Select a chat first");
+    return;
+  }
+
+  if (!text) return;
+
+  await api("/api/admin/messages", {
+    method: "POST",
+    body: JSON.stringify({
+      chat_id: selectedChatId,
+      text,
+      reply_to_message_id: replyToMessageId
+    })
+  });
+
+  input.value = "";
+  clearReply();
+
+  await loadMessages();
+  await loadChats();
+}
+
+async function deleteChat() {
+  if (!selectedChatId) {
+    alert("Select a chat first");
+    return;
+  }
+
+  if (!confirm("Delete this chat history from panel?")) return;
+
+  await api(
+    "/api/admin/chat?chat_id=" + encodeURIComponent(selectedChatId),
+    { method: "DELETE" }
+  );
+
+  selectedChatId = null;
+  selectedChatTitle = null;
+  clearReply();
+
+  document.getElementById("chatTitle").innerText = "Select a chat";
+  document.getElementById("messages").innerHTML =
+    `<div class="empty">No chat selected</div>`;
+
+  await loadChats();
+}
+
+function handleEnter(event) {
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+}
+
+loadChats();
+trackPanelVisit();
+ setInterval(() => {
+  if (selectedChatId) loadMessages();
+}, 5000);
