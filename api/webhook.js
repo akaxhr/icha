@@ -7,6 +7,7 @@ import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
 const BOT_USERNAME = "im_icha_bot";
 const BOT_ID = 8737922551;
 const OWNER_ID = "8348549970";
+  const ICHA_ID = "1317303121";
 
 
 export default async function handler(req, res) {
@@ -29,7 +30,6 @@ export default async function handler(req, res) {
     
     const userName = message.from?.first_name || "User";
     const displayName = await getDisplayName(userId, userName);
-    const ICHA_ID = "1317303121";
     const isIcha = userId === ICHA_ID;
     const text = message.text.trim();
     const lowerText = text.toLowerCase();
@@ -84,9 +84,9 @@ export default async function handler(req, res) {
     const memoryText = await getUserHistory(userId);
 
     const cleanText = text
-      .replace(/\/akash/gi, "")
+      .replace(/\/icha/gi, "")
       .replace(new RegExp(`@${BOT_USERNAME}`, "gi"), "")
-      .replace(/\bakash\b/gi, "")
+      .replace(/\bicha\b/gi, "")
       .trim();
 
     const isOwner = userId === OWNER_ID;
