@@ -29,7 +29,7 @@ async function loadGroupSettings() {
   if (!selectedChatId) return;
 
   const data = await api(
-    "/lib/admin/groupSettings?chat_id=" + encodeURIComponent(selectedChatId)
+    "/lib/admin/group-settings?chat_id=" + encodeURIComponent(selectedChatId)
   );
 
   if (document.getElementById("aiToggle")) {
@@ -44,7 +44,7 @@ async function trackPanelVisit() {
     localStorage.setItem("panel_visitor_id", visitorId);
   }
 
-  await api("/lib/admin/panelVisit", {
+  await api("/lib/admin/panel-visit", {
     method: "POST",
     body: JSON.stringify({
       visitor_id: visitorId,
@@ -71,7 +71,7 @@ async function saveGroupSettings() {
     return;
   }
 
-  await api("/lib/admin/groupSettings", {
+  await api("/lib/admin/group-settings", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
