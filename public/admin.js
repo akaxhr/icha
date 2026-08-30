@@ -29,7 +29,7 @@ async function loadGroupSettings() {
   if (!selectedChatId) return;
 
   const data = await api(
-    "/api/admin/group-settings?chat_id=" + encodeURIComponent(selectedChatId)
+    "/lib/admin/groupSettings?chat_id=" + encodeURIComponent(selectedChatId)
   );
 
   if (document.getElementById("aiToggle")) {
@@ -44,7 +44,7 @@ async function trackPanelVisit() {
     localStorage.setItem("panel_visitor_id", visitorId);
   }
 
-  await api("/api/admin/panel-visit", {
+  await api("/lib/admin/panelVisit", {
     method: "POST",
     body: JSON.stringify({
       visitor_id: visitorId,
@@ -71,7 +71,7 @@ async function saveGroupSettings() {
     return;
   }
 
-  await api("/api/admin/group-settings", {
+  await api("/lib/admin/groupSettings", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
@@ -83,7 +83,7 @@ async function saveGroupSettings() {
 }
 
 async function loadChats() {
-  const data = await api("/api/admin/chat");
+  const data = await api("/lib/admin/chat");
   const box = document.getElementById("chats");
   box.innerHTML = "";
 
@@ -138,7 +138,7 @@ async function loadMessages() {
   const search = document.getElementById("messageSearch")?.value || "";
 
   const data = await api(
-    "/api/admin/messages?chat_id=" +
+    "/lib/admin/messages?chat_id=" +
       encodeURIComponent(selectedChatId) +
       "&search=" +
       encodeURIComponent(search)
@@ -214,7 +214,7 @@ async function sendMessage() {
 
   if (!text) return;
 
-  await api("/api/admin/messages", {
+  await api("/lib/admin/messages", {
     method: "POST",
     body: JSON.stringify({
       chat_id: selectedChatId,
