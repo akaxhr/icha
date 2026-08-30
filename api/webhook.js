@@ -58,6 +58,7 @@ export default async function handler(req, res) {
 
     await saveUserHistory(userId, userName, "user", text);
 
+    
     // Don't let AI reply to commands
     if (text.startsWith("/")) {
       return res.status(200).json({ ok: true });
