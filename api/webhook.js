@@ -1,11 +1,5 @@
-import { logUserTextHistory } from "../lib/modules/userHistoryLogger.js";
 import { handleAiReply } from "../lib/aiReply/index.js";
-import { handleCommands } from "../lib/commands/index.js";
-import { handleSettingsInput } from "../lib/modules/settingsInputHandler.js";
-import { logIncomingMessage } from "../lib/modules/messageLogger.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
-import { runCallbackPipeline } from "../lib/modules/callbackPipeline.js";
-import { runMessagePipeline } from "../lib/modules/messagePipeline.js";
 import { getAdminAction, handleAdminApi } from "../lib/admin/index.js";
 
 const OWNER_ID = String(process.env.OWNER_ID || "8348549970");
@@ -57,9 +51,6 @@ export default async function handler(req, res) {
 
     const update = req.body || {};
 
-if (await runCallbackPipeline(update)) {
-  return ok(res);
-}
 
     const message = update.message || update.edited_message;
 
