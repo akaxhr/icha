@@ -1,111 +1,149 @@
-import { handleAiReply } from "../lib/aiReply/index.js";
-import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
-import { getAdminAction, handleAdminApi } from "../lib/admin/index.js";
+import { generateWithFallback } from "./lib/ai.js";
+import { getUserHistory, saveUserHistory } from "./lib/memory.js";
+import { sendTelegram } from "./lib/telegram.js";
+import { saveMessage } from "./lib/messages.js";
+import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
 
-const OWNER_ID = String(process.env.OWNER_ID || "8348549970");
+const BOT_USERNAME = "im_icha_bot";
+const BOT_ID = 8737922551;
+const OWNER_ID = "8348549970";
 
-function ok(res) {
-  return res.status(200).json({ ok: true });
-}
 
 export default async function handler(req, res) {
-  let adminAction = null;
-
-  try {
-    adminAction = getAdminAction(req);
-  } catch (err) {
-    console.error("getAdminAction error:", err);
-    return res.status(500).json({
-      error: "getAdminAction failed",
-      message: err.message
-    });
-  }
-
-  if (adminAction) {
-    try {
-      return await handleAdminApi(req, res, adminAction);
-    } catch (err) {
-      console.error("handleAdminApi error:", err);
-      return res.status(500).json({
-        error: "handleAdminApi failed",
-        message: err.message,
-        stack: err.stack
-      });
-    }
-  }
-
   if (req.method !== "POST") {
-    return res
-      .status(200)
-      .send("Icha bot is alive with GroupHelp/Rose-style modules. Single Vercel function mode.");
+    return res.status(200).send("Telegram bot is alive");
   }
 
   try {
-    if (process.env.TELEGRAM_WEBHOOK_SECRET) {
-      const got = req.headers["x-telegram-bot-api-secret-token"];
+    const update = req.body;
+    const message = update.message;
 
-      if (got !== process.env.TELEGRAM_WEBHOOK_SECRET) {
-        return res.status(401).json({ ok: false });
-      }
-    }
-
-    const update = req.body || {};
-
-
-    const message = update.message || update.edited_message;
-
-    if (!message) {
-      return ok(res);
+    if (!message?.text) {
+      return res.status(200).json({ ok: true });
     }
 
     const chatId = message.chat.id;
-    const user = message.from || {};
-    const userId = user.id ? String(user.id) : "unknown";
-    const userName = user.first_name || user.username || "User";
-    const displayName = await getDisplayName(userId, userName);
     const settings = await getGroupSettings(chatId);
 
-    await logIncomingMessage(message, userId, displayName);
-
-    const text = String(message.text || message.caption || "").trim();
+    const userId = String(message.from.id);
+    
+    const userName = message.from?.first_name || "User";
+    const displayName = await getDisplayName(userId, userName);
+    const ICHA_ID = "1317303121";
+    const isIcha = userId === ICHA_ID;
+    const text = message.text.trim();
     const lowerText = text.toLowerCase();
 
-    const ctx = {
-      req,
-      res,
-      update,
-      message,
-      chatId,
-      text,
-      lowerText,
-      user,
-      userId,
-      displayName,
-      settings,
-      ownerId: OWNER_ID
-    };
+    await saveMessage({
+      chat_id: String(chatId),
+      chat_title:
+        message.chat.title ||
+        message.chat.first_name ||
+        message.chat.username ||
+        "Private Chat",
+      chat_type: message.chat.type,
+      user_id: userId,
+      username: displayName,
+      message_text: text,
+      telegram_message_id: message.message_id,
+      reply_to_message_id: message.reply_to_message?.message_id || null,
+      reply_to_text: message.reply_to_message?.text || null,
+      reply_to_username:
+        message.reply_to_message?.from?.first_name ||
+        message.reply_to_message?.from?.username ||
+        null,
+      is_bot: false,
+    });
 
-    await logUserTextHistory(message, userId, userName, text);
+    await saveUserHistory(userId, userName, "user", text);
 
-    if (await handleSettingsInput(message, userId)) {
-  return ok(res);
-}
-
-if (await handleCommands(message, userId, OWNER_ID)) {
-  return ok(res);
-}
-
-    if (await runMessagePipeline(ctx)) {
-      return ok(res);
+    // Don't let AI reply to commands
+    if (text.startsWith("/")) {
+      return res.status(200).json({ ok: true });
     }
 
-    if (await handleAiReply(ctx)) {
-      return ok(res);
+    const isPrivateChat = message.chat.type === "private";
+    const isReplyToBot = message.reply_to_message?.from?.id === BOT_ID;
+
+    const shouldReply =
+      isPrivateChat ||
+      text.startsWith("/icha") ||
+      /\bicha\b/i.test(text) ||
+      lowerText.includes(`@${BOT_USERNAME}`) ||
+      lowerText.startsWith("remember") ||
+      isReplyToBot;
+
+    if (!shouldReply) {
+      return res.status(200).json({ ok: true });
     }
 
-    return ok(res);
+    if (!settings.ai_enabled) {
+      return res.status(200).json({ ok: true });
+    }
+
+    const memoryText = await getUserHistory(userId);
+
+    const cleanText = text
+      .replace(/\/akash/gi, "")
+      .replace(new RegExp(`@${BOT_USERNAME}`, "gi"), "")
+      .replace(/\bakash\b/gi, "")
+      .trim();
+
+    const isOwner = userId === OWNER_ID;
+    
+
+    const ownerInfo = isOwner
+      ? "This user is the owner of Akash. Treat them as your creator/owner."
+      : "This user is NOT the owner. Never claim they are your owner, creator, admin, or boss.";
+    
+    const ichaInfo = isIcha
+  ? `
+This user is Icha.
+You are a representation of her personality.
+Be extra familiar, natural and comfortable with her.
+Remember she is the person you are based on.
+`
+  : "";
+
+    const prompt = `
+You are Icha, you are good acting Telegram group member with responsibilty and maturity who acts good and friendly.
+Actually ur name is إِيشَا(isya) but dont use while saying in conversation.
+you are from Malaysia. never text lenthy . keeping text length short is very strict instruction.
+aged 21, weighs only 41, with only 152cm height girl, dont mention these things casually. dont mention your date of birth(3/8/2005) simply , say only if specifically asked.
+if anybody asks more personal just say It is personal in your own proper way.
+never speak malaysian language at first , speak in malaysian only if asked.
+${ichaInfo}
+
+OWNER RULES:
+${ownerInfo}
+
+Keep replies short, casual, funny, and natural.
+Do not write lengthy replies unless asked.
+Do not claim you are AI. Say you were created by Akash/Mr.Akash if asked.
+The user's name is ${displayName}.
+
+use these words very occasionally , it is mentioned just for your knowledge not to use:
+sat=satap=shut-up,
+wt da el= what the hell,
+so reply accordingly keep it natural..
+
+Recent conversation with this user:
+${memoryText}
+
+User message:
+${cleanText}
+`;
+
+    const responseText = await generateWithFallback(prompt);
+    const finalReply = responseText || "I couldn't think of a reply.";
+
+    await sendTelegram(chatId, finalReply, message.message_id);
+
+    await saveUserHistory(userId, displayName, "bot", finalReply);
+
+    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error("Webhook error:", err);
-    return ok(res);
+    return res.status(200).json({ ok: true });
   }
 }
