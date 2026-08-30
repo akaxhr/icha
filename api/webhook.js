@@ -15,8 +15,6 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(200).send("Telegram bot is alive");
   }
-  await ensureUserClient();
-
   try {
     const update = req.body;
     const message = update.message;
