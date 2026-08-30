@@ -61,9 +61,51 @@ export default async function handler(req, res) {
 
     
     // Don't let AI reply to commands
-    if (text.startsWith("/")) {
-      return res.status(200).json({ ok: true });
+    if (text.startsWith("/play")) {
+  const query = text.replace(/^\/play\s*/i, "").trim();
+
+  if (!query) {
+    await sendTelegram(
+      chatId,
+      "🎵 Tell me what to play.",
+      message.message_id
+    );
+
+    return res.status(200).json({ ok: true });
+  }
+
+  try {
+    const result = await playMusic(chatId, query);
+
+    if (result.status === "queued") {
+      await sendTelegram(
+        chatId,
+        `🎵 Queued: <b>${result.song.title}</b>`,
+        message.message_id
+      );
+    } else {
+      await sendTelegram(
+        chatId,
+        `▶️ Playing: <b>${result.song.title}</b>`,
+        message.message_id
+      );
     }
+  } catch (err) {
+    console.error("Music error:", err);
+
+    await sendTelegram(
+      chatId,
+      "❌ Couldn't play that song.",
+      message.message_id
+    );
+  }
+
+  return res.status(200).json({ ok: true });
+}
+
+if (text.startsWith("/")) {
+  return res.status(200).json({ ok: true });
+}
 
     const isPrivateChat = message.chat.type === "private";
     const isReplyToBot = message.reply_to_message?.from?.id === BOT_ID;
