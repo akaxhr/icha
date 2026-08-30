@@ -3,21 +3,12 @@ import { getUserHistory, saveUserHistory } from "../lib/memory.js";
 import { sendTelegram } from "../lib/telegram.js";
 import { saveMessage } from "../lib/messages.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
-import { startUserClient } from "../lib/userClient.js";
+
 
 const BOT_USERNAME = "im_icha_bot";
 const BOT_ID = 8737922551;
 const OWNER_ID = "8348549970";
   const ICHA_ID = "1317303121";
-
-let userClientStarted = false;
-
-async function ensureUserClient() {
-  if (userClientStarted) return;
-
-  await startUserClient();
-  userClientStarted = true;
-}
 
 
 export default async function handler(req, res) {
