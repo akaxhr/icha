@@ -2,7 +2,9 @@
   "type": "module",
   "dependencies": {
     "@google/genai": "latest",
-    "@supabase/supabase-js": "latest"
+    "@supabase/supabase-js": "latest",
+    "telegram": "latest",
+    "input": "latest"
   },
   "scripts": {
     "check": "node --check api/webhook.js"
