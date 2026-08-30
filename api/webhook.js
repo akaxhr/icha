@@ -1,8 +1,8 @@
-import { generateWithFallback } from "./lib/ai.js";
-import { getUserHistory, saveUserHistory } from "./lib/memory.js";
-import { sendTelegram } from "./lib/telegram.js";
-import { saveMessage } from "./lib/messages.js";
-import { getDisplayName, getGroupSettings } from "./lib/aliases.js";
+import { generateWithFallback } from "../lib/ai.js";
+import { getUserHistory, saveUserHistory } from "../lib/memory.js";
+import { sendTelegram } from "../lib/telegram.js";
+import { saveMessage } from "../lib/messages.js";
+import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
 
 const BOT_USERNAME = "im_icha_bot";
 const BOT_ID = 8737922551;
