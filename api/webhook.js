@@ -2,7 +2,12 @@ import { generateWithFallback } from "../lib/ai.js";
 import { getUserHistory, saveUserHistory } from "../lib/memory.js";
 import { claimTelegramUpdate } from "../lib/supabase.js";
 import { sendTelegram } from "../lib/telegram.js";
-import { playMusic } from "../lib/musicWorker.js";
+import {
+  playMusic,
+  skipMusic,
+  stopMusic,
+  getQueue,
+} from "../lib/musicWorker.js";
 import { saveMessage } from "../lib/messages.js";
 import { musicCommand } from "../lib/music/index.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
