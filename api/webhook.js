@@ -75,7 +75,58 @@ if (updateId !== undefined) {
 
     await saveUserHistory(userId, userName, "user", text);
 
-    
+    if (text === "/queue" || text === "/q") {
+  try {
+    const data = await getQueue(chatId);
+
+    if (!data.current && (!data.queue || data.queue.length === 0)) {
+      await sendMessage(
+        chatId,
+        "📭 <b>MUSIC QUEUE</b>\n\n> Nothing is playing or queued.",
+        "HTML"
+      );
+
+      return;
+    }
+
+    let message = "📜 <b>MUSIC QUEUE</b>\n\n";
+
+    if (data.current) {
+      message +=
+        "🎧 <b>Now Playing</b>\n" +
+        `🎵 ${escapeHtml(data.current)}\n\n`;
+    }
+
+    if (data.queue?.length) {
+      message += "<b>Up Next</b>\n\n";
+
+      for (const item of data.queue) {
+        message +=
+          `<code>${String(item.position).padStart(2, "0")}</code> ` +
+          `🎵 <b>${escapeHtml(item.query)}</b>\n`;
+      }
+    } else {
+      message +=
+        "> 📭 No more songs waiting in queue.\n";
+    }
+
+    await sendMessage(
+      chatId,
+      message,
+      "HTML"
+    );
+
+  } catch (error) {
+    console.error("❌ Queue command failed:", error);
+
+    await sendMessage(
+      chatId,
+      "❌ Failed to load the music queue."
+    );
+  }
+
+  return;
+}
     // Don't let AI reply to commands
     if (text.startsWith("/play")) {
   const query = text.replace(/^\/play\s*/i, "").trim();
