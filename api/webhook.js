@@ -20,6 +20,16 @@ export default async function handler(req, res) {
   }
   try {
     const update = req.body;
+    const updateId = update?.update_id;
+
+if (updateId !== undefined) {
+  const claimed = await claimTelegramUpdate(updateId);
+
+  if (!claimed) {
+    console.log(`⏭️ Duplicate Telegram update ignored: ${updateId}`);
+    return res.status(200).json({ ok: true });
+  }
+}
     const message = update.message;
 
     if (!message?.text) {
