@@ -73,11 +73,11 @@ if (updateId !== undefined) {
   if (text.startsWith("/play")) {
   try {
     await musicCommand(
-      chatId,
-      message.message_id,
-      text,
-      sendTelegram
-    );
+  text,
+  chatId,
+  message.message_id,
+  sendTelegram
+);
   } catch (err) {
     console.error("Music command error:", err);
 
