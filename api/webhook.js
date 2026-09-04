@@ -4,7 +4,6 @@ import { claimTelegramUpdate } from "../lib/supabase.js";
 import { sendTelegram } from "../lib/telegram.js";
 import { musicCommand } from "../lib/music/index.js";
 import { saveMessage } from "../lib/messages.js";
-import { musicCommand } from "../lib/music/index.js";
 import { getDisplayName, getGroupSettings } from "../lib/aliases.js";
 
 
@@ -70,94 +69,21 @@ if (updateId !== undefined) {
 
     await saveUserHistory(userId, userName, "user", text);
 
-    if (text === "/queue" || text === "/q") {
+
+  if (text.startsWith("/play")) {
   try {
-    const data = await getQueue(chatId);
-
-    if (!data.current && (!data.queue || data.queue.length === 0)) {
-      await sendMessage(
-        chatId,
-        "📭 <b>MUSIC QUEUE</b>\n\n> Nothing is playing or queued.",
-        "HTML"
-      );
-
-      return;
-    }
-
-    let message = "📜 <b>MUSIC QUEUE</b>\n\n";
-
-    if (data.current) {
-      message +=
-        "🎧 <b>Now Playing</b>\n" +
-        `🎵 ${escapeHtml(data.current)}\n\n`;
-    }
-
-    if (data.queue?.length) {
-      message += "<b>Up Next</b>\n\n";
-
-      for (const item of data.queue) {
-        message +=
-          `<code>${String(item.position).padStart(2, "0")}</code> ` +
-          `🎵 <b>${escapeHtml(item.query)}</b>\n`;
-      }
-    } else {
-      message +=
-        "> 📭 No more songs waiting in queue.\n";
-    }
-
-    await sendMessage(
+    await musicCommand(
       chatId,
-      message,
-      "HTML"
+      message.message_id,
+      text,
+      sendTelegram
     );
-
-  } catch (error) {
-    console.error("❌ Queue command failed:", error);
-
-    await sendMessage(
-      chatId,
-      "❌ Failed to load the music queue."
-    );
-  }
-
-  return;
-}
-    // Don't let AI reply to commands
-    if (text.startsWith("/play")) {
-  const query = text.replace(/^\/play\s*/i, "").trim();
-
-  if (!query) {
-    await sendTelegram(
-      chatId,
-      "🎵 Tell me what to play.",
-      message.message_id
-    );
-
-    return res.status(200).json({ ok: true });
-  }
-
-  try {
-    const result = await playMusic(chatId, query);
-
-    if (result.status === "queued") {
-      await sendTelegram(
-        chatId,
-        `🎵 Queued: <b>${result.song.title}</b>`,
-        message.message_id
-      );
-    } else {
-      await sendTelegram(
-        chatId,
-        `▶️ Playing: <b>${result.song.title}</b>`,
-        message.message_id
-      );
-    }
   } catch (err) {
-    console.error("Music error:", err);
+    console.error("Music command error:", err);
 
     await sendTelegram(
       chatId,
-      "❌ Couldn't play that song.",
+      "❌ Something went wrong with the music command.",
       message.message_id
     );
   }
